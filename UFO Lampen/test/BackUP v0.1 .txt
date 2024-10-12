@@ -1,0 +1,131 @@
+#include <Adafruit_NeoPixel.h>
+#include <Arduino.h>
+
+#define DATA_OUTPUT 2
+#define LED_Count 120  // 40*3
+
+#define LAMPEN_TOTAL 6
+#define LEDs_INSIDE 40
+// // Farben
+
+// uint32_t color_basic = (100, 20, 2, 0);
+// uint32_t color_blitz0 = (0, 0, 15, 180);
+// uint32_t color_blitz1 = (0, 0, 0, 100);
+
+Adafruit_NeoPixel strip(LED_Count, DATA_OUTPUT, NEO_GRBW + NEO_KHZ800);
+
+
+
+bool lampe_0 = false;
+bool lampe_1 = false;
+bool lampe_2 = false;
+
+void setAllCollors(byte r, byte g, byte b, byte w) {
+    for (int i = 0; i < LED_Count; i++) {
+        strip.setPixelColor(i, strip.Color(r, g, b, w));
+    }
+    strip.show();
+}
+
+void setup() {
+    Serial.begin(9600);
+
+    strip.begin();
+    strip.clear();
+    setAllCollors(100, 20, 2, 0);  // Einstellung Grundfarbe
+
+    Serial.println("Start Fertig");
+}
+
+void blitz_start(byte von, byte bis) {
+    for (int i = von; i < bis; i++) {
+        strip.setPixelColor(i, strip.Color(0, 0, 20, 100));
+        strip.show();
+        delay(5);
+    }
+    delay(100);
+}
+
+void blitz_flashen(byte von, byte bis) {
+    for (int i = von; i < bis; i++) {
+        strip.setPixelColor(i, strip.Color(0, 0, 15, 180));
+    }
+    strip.show();
+    delay(20);
+    for (int i = von; i < bis; i++) {
+        strip.setPixelColor(i, strip.Color(0, 0, 0, 100));
+    }
+    strip.show();
+    delay(30);
+    for (int i = von; i < bis; i++) {
+        strip.setPixelColor(i, strip.Color(0, 0, 15, 180));
+    }
+    strip.show();
+    delay(10);
+}
+
+void resetLampe(byte von, byte bis) {
+    for (int i = von; i < bis; i++) {
+        strip.setPixelColor(i, strip.Color(100, 20, 2, 0));
+    }
+    strip.show();
+}
+
+void lampeBlitz(byte welcheLampe) {
+    switch (welcheLampe) {
+        case 0:
+            blitz_start(0, 40);
+            blitz_flashen(0, 40);
+            resetLampe(0, 40);
+            break;
+
+        case 1:
+            blitz_start(40, 80);
+            blitz_flashen(40, 80);
+            resetLampe(40, 80);
+            break;
+
+        case 2:
+            blitz_start(80, 120);
+            blitz_flashen(80, 120);
+            resetLampe(80, 120);
+            break;
+    }
+}
+
+void blitz() {
+    for (int i = 0; i < LED_Count; i++) {
+        strip.setPixelColor(i, strip.Color(0, 0, 20, 100));
+        strip.show();
+
+        if (i >= 39 && lampe_0 == false) {
+            setAllCollors(100, 20, 2, 0);  // Einstellung Grundfarbe
+            lampe_0 = true;
+            delay(500);
+        }
+        if (i >= 79 && lampe_1 == false) {
+            setAllCollors(100, 20, 2, 0);  // Einstellung Grundfarbe
+
+            lampe_1 = true;
+            delay(500);
+        }
+        if (i >= 119 && lampe_2 == false) {
+            setAllCollors(100, 20, 2, 0);  // Einstellung Grundfarbe
+            lampe_2 = true;
+            delay(500);
+        }
+    }
+
+    delay(1000);
+
+    lampe_0 = false;
+    lampe_2 = false;
+    lampe_1 = false;
+}
+
+void loop() {
+    int zufallszahl = rand() % 3;
+    lampeBlitz(zufallszahl);
+    Serial.println(zufallszahl);
+    delay(1500);
+}
